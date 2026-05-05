@@ -25,7 +25,6 @@ class DroneCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Info drone
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,68 +46,77 @@ class DroneCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Tombol Start/Stop
-                TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    backgroundColor: drone.isActive
-                        ? const Color(0xFFFA5858)  // merah → Stop Drone
-                        : const Color(0xFFB2EBF2), // tosca → Start Drone
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                // Status badge (bukan tombol aksi lagi)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: drone.isActive
+                        ? const Color(0xFFB2EBF2) // tosca pastel
+                        : const Color(0xFFFFCDD2), // merah pastel
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(
-                    drone.isActive ? 'Stop Drone' : 'Start Drone',
-                    style: TextStyle(
-                      color: drone.isActive
-                          ? Colors.white        // teks putih di atas merah
-                          : const Color(0xFF677071), // teks #677071 di atas tosca
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: drone.isActive
+                              ? const Color(0xFF00838F)
+                              : const Color(0xFFC62828),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        drone.isActive ? 'Active' : 'Offline',
+                        style: TextStyle(
+                          color: drone.isActive
+                              ? const Color(0xFF677071)
+                              : const Color(0xFFC62828),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 12),
-          // Foto drone + status badge
+          // Foto drone
           Stack(
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.network(
+                child: drone.imageUrl.isNotEmpty
+                    ? Image.network(
                   drone.imageUrl,
                   width: 110,
                   height: 90,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    width: 110,
-                    height: 90,
-                    color: AppColors.background,
-                    child: const Icon(Icons.router, color: AppColors.textSecondary),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 6,
-                right: 6,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: drone.isActive ? AppColors.statusOn : AppColors.statusOff,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 1.5),
-                  ),
-                ),
+                  errorBuilder: (_, __, ___) => _placeholder(),
+                )
+                    : _placeholder(),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _placeholder() {
+    return Container(
+      width: 110,
+      height: 90,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F6FA),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: const Icon(Icons.router, color: AppColors.textSecondary, size: 32),
     );
   }
 }

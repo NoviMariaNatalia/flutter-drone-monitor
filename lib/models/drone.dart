@@ -6,7 +6,7 @@ class Drone {
   final bool isActive;
   final double latitude;
   final double longitude;
-  final String zone;
+  final String location;
 
   Drone({
     required this.id,
@@ -16,7 +16,7 @@ class Drone {
     required this.isActive,
     required this.latitude,
     required this.longitude,
-    required this.zone,
+    required this.location,
   });
 }
 
@@ -30,7 +30,7 @@ final List<Drone> dummyDrones = [
     isActive: true,
     latitude: -6.2088,
     longitude: 106.8456,
-    zone: 'Ciliwung Basin • Zone A4',
+    location: 'Ciliwung Basin',
   ),
   Drone(
     id: '002',
@@ -40,7 +40,7 @@ final List<Drone> dummyDrones = [
     isActive: true,
     latitude: -6.1751,
     longitude: 106.8272,
-    zone: 'Kanal Barat • Zone B2',
+    location: 'Kanal Barat',
   ),
   Drone(
     id: '003',
@@ -50,6 +50,6 @@ final List<Drone> dummyDrones = [
     isActive: false,
     latitude: -6.2297,
     longitude: 106.8295,
-    zone: 'Pesanggrahan • Zone C1',
+    location: 'Pesanggrahan',
   ),
 ];

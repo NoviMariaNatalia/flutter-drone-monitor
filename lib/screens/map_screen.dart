@@ -156,7 +156,7 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _selectedDrone!.zone,
+                      _selectedDrone!.location,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
