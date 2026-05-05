@@ -81,9 +81,19 @@ class _MapScreenState extends State<MapScreen> {
           // Map
           FlutterMap(
             options: MapOptions(
-              initialCenter: _drones.isNotEmpty
-                  ? LatLng(_drones.first.latitude, _drones.first.longitude)
-                  : const LatLng(-6.2088, 106.8456),
+              initialCenter: () {
+                // Cari drone aktif pertama yang punya koordinat valid
+                final activeDrone = _drones.firstWhere(
+                      (d) => d.isActive && d.latitude != 0 && d.longitude != 0,
+                  orElse: () => Drone(
+                    id: '', name: '', type: '', imageUrl: '',
+                    isActive: false,
+                    latitude: -6.2088, longitude: 106.8456,
+                    location: '',
+                  ),
+                );
+                return LatLng(activeDrone.latitude, activeDrone.longitude);
+              }(),
               initialZoom: 11,
               onTap: (_, __) => setState(() => _selectedDrone = null),
             ),
@@ -93,7 +103,9 @@ class _MapScreenState extends State<MapScreen> {
                 userAgentPackageName: 'com.example.flutter_drone_monitor',
               ),
               MarkerLayer(
-                markers: _drones.map((drone) {
+                markers: _drones
+                    .where((drone) => drone.isActive && drone.latitude != 0 && drone.longitude != 0)
+                    .map((drone) {
                   return Marker(
                     point: LatLng(drone.latitude, drone.longitude),
                     width: 40,
@@ -102,9 +114,7 @@ class _MapScreenState extends State<MapScreen> {
                       onTap: () => setState(() => _selectedDrone = drone),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: drone.isActive
-                              ? AppColors.primary
-                              : AppColors.statusOff,
+                          color: AppColors.primary,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
@@ -139,7 +149,7 @@ class _MapScreenState extends State<MapScreen> {
                 _buildInfoBadge(
                   icon: Icons.sensors,
                   iconColor: AppColors.primary,
-                  label: '${_drones.length} SENSORS ACTIVE',
+                  label: '${_drones.where((d) => d.isActive).length} SENSORS ACTIVE',
                 ),
               ],
             ),

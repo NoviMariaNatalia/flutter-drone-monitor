@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class DroneService {
-  static const String baseUrl = 'http://192.168.100.68:8000/api'; // sesuaikan IP kamu
+  static const String baseUrl = 'http://xxx:8000/api'; // sesuaikan IP
 
   static Future<Map<String, dynamic>> registerDrone({
     required String droneId,
@@ -43,7 +43,7 @@ class DroneService {
   static Future<List<Map<String, dynamic>>> getActiveDrones() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/active-drones'),
+        Uri.parse('$baseUrl/drones'), // ← ganti dari /active-drones
         headers: {'Content-Type': 'application/json'},
       );
 

@@ -22,10 +22,10 @@ class Drone {
   factory Drone.fromJson(Map<String, dynamic> json) {
     return Drone(
       id: json['drone_id'] ?? '',
-      name: json['name'] ?? '',
-      type: json['type'] ?? '',
+      name: json['name'] ?? '-',
+      type: json['type'] ?? '-',
       imageUrl: '',
-      isActive: true,
+      isActive: json['is_active'] ?? false, // ← dari field is_active
       latitude: double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
       longitude: double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
       location: json['location'] ?? '-',
