@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/app_colors.dart';
 import '../models/drone.dart';
+import '../services/drone_service.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -13,6 +14,25 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   Drone? _selectedDrone;
+  List<Drone> _drones = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDrones();
+  }
+
+  Future<void> _fetchDrones() async {
+    setState(() => _isLoading = true);
+
+    final result = await DroneService.getActiveDrones();
+
+    setState(() {
+      _isLoading = false;
+      _drones = result.map((json) => Drone.fromJson(json)).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,20 +67,25 @@ class _MapScreenState extends State<MapScreen> {
               height: 36,
               decoration: BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.circular(8), // kotak dengan sudut sedikit rounded
+                borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.person, color: Colors.white, size: 20),
             ),
           ),
         ],
       ),
-      body: Stack(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : Stack(
         children: [
           // Map
           FlutterMap(
             options: MapOptions(
-              initialCenter: const LatLng(-6.2088, 106.8456),
+              initialCenter: _drones.isNotEmpty
+                  ? LatLng(_drones.first.latitude, _drones.first.longitude)
+                  : const LatLng(-6.2088, 106.8456),
               initialZoom: 11,
+              onTap: (_, __) => setState(() => _selectedDrone = null),
             ),
             children: [
               TileLayer(
@@ -68,7 +93,7 @@ class _MapScreenState extends State<MapScreen> {
                 userAgentPackageName: 'com.example.flutter_drone_monitor',
               ),
               MarkerLayer(
-                markers: dummyDrones.map((drone) {
+                markers: _drones.map((drone) {
                   return Marker(
                     point: LatLng(drone.latitude, drone.longitude),
                     width: 40,
@@ -77,7 +102,9 @@ class _MapScreenState extends State<MapScreen> {
                       onTap: () => setState(() => _selectedDrone = drone),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: drone.isActive ? AppColors.primary : AppColors.statusOff,
+                          color: drone.isActive
+                              ? AppColors.primary
+                              : AppColors.statusOff,
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
@@ -112,13 +139,13 @@ class _MapScreenState extends State<MapScreen> {
                 _buildInfoBadge(
                   icon: Icons.sensors,
                   iconColor: AppColors.primary,
-                  label: '${dummyDrones.where((d) => d.isActive).length} SENSORS ACTIVE',
+                  label: '${_drones.length} SENSORS ACTIVE',
                 ),
               ],
             ),
           ),
 
-          // Info panel bawah (muncul saat drone di-tap)
+          // Panel bawah (muncul saat marker di-tap)
           if (_selectedDrone != null)
             Positioned(
               bottom: 0,
@@ -130,7 +157,11 @@ class _MapScreenState extends State<MapScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   boxShadow: [
-                    BoxShadow(color: Colors.black12, blurRadius: 12, offset: Offset(0, -2)),
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 12,
+                      offset: Offset(0, -2),
+                    ),
                   ],
                 ),
                 child: Column(
@@ -155,6 +186,16 @@ class _MapScreenState extends State<MapScreen> {
                       ],
                     ),
                     const SizedBox(height: 4),
+                    // Drone ID
+                    Text(
+                      _selectedDrone!.id,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    // Lokasi
                     Text(
                       _selectedDrone!.location,
                       style: const TextStyle(

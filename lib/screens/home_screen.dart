@@ -3,9 +3,39 @@ import '../constants/app_colors.dart';
 import '../models/drone.dart';
 import '../widgets/drone_card.dart';
 import '../widgets/add_drone_sheet.dart';
+import '../services/drone_service.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Drone> _drones = [];
+  bool _isLoading = true;
+  bool _isError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDrones();
+  }
+
+  Future<void> _fetchDrones() async {
+    setState(() {
+      _isLoading = true;
+      _isError = false;
+    });
+
+    final result = await DroneService.getActiveDrones();
+
+    setState(() {
+      _isLoading = false;
+      _drones = result.map((json) => Drone.fromJson(json)).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +71,7 @@ class HomeScreen extends StatelessWidget {
               height: 36,
               decoration: BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.circular(8), // kotak dengan sudut sedikit rounded
+                borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(Icons.person, color: Colors.white, size: 20),
             ),
@@ -54,7 +84,6 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 24),
-            // Greeting
             const Text(
               'Hi, Hotman!',
               style: TextStyle(
@@ -71,43 +100,23 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // Summary chips
-            // Row(
-            //   children: [
-            //     _buildChip(
-            //       '${dummyDrones.where((d) => d.isActive).length} Active',
-            //       AppColors.statusOn,
-            //     ),
-            //     const SizedBox(width: 8),
-            //     _buildChip(
-            //       '${dummyDrones.where((d) => !d.isActive).length} Offline',
-            //       AppColors.statusOff,
-            //     ),
-            //   ],
-            // ),
-            // const SizedBox(height: 16),
-            // Drone list
-            Expanded(
-              child: ListView.builder(
-                itemCount: dummyDrones.length,
-                itemBuilder: (context, index) {
-                  return DroneCard(drone: dummyDrones[index]);
-                },
-              ),
-            ),
+            // Konten utama
+            Expanded(child: _buildBody()),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showModalBottomSheet(
+        onPressed: () async {
+          await showModalBottomSheet(
             context: context,
-            isScrollControlled: true, // penting agar bottom sheet naik saat keyboard muncul
+            isScrollControlled: true,
             shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
             builder: (context) => const AddDroneSheet(),
           );
+          // Refresh list setelah bottom sheet ditutup
+          _fetchDrones();
         },
         backgroundColor: AppColors.primary,
         child: const Icon(Icons.add, color: Colors.white),
@@ -115,30 +124,48 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChip(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: color,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+  Widget _buildBody() {
+    // State: loading
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+
+    // State: list kosong
+    if (_drones.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.flight_land, size: 48, color: AppColors.textSecondary),
+            const SizedBox(height: 12),
+            const Text(
+              'Belum ada drone terdaftar',
+              style: TextStyle(color: AppColors.textSecondary),
             ),
-          ),
-        ],
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchDrones,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+              child: const Text('Coba Lagi', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // State: data tersedia
+    return RefreshIndicator(
+      onRefresh: _fetchDrones, // pull to refresh
+      color: AppColors.primary,
+      child: ListView.builder(
+        itemCount: _drones.length,
+        itemBuilder: (context, index) {
+          return DroneCard(drone: _drones[index]);
+        },
       ),
     );
   }

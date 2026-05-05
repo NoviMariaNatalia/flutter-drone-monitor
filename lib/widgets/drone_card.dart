@@ -13,7 +13,7 @@ class DroneCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.cardBg,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -29,6 +29,17 @@ class DroneCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Drone ID
+                Text(
+                  drone.id,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                // Nama drone
                 Text(
                   drone.name,
                   style: const TextStyle(
@@ -46,13 +57,13 @@ class DroneCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Status badge (bukan tombol aksi lagi)
+                // Status badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
                     color: drone.isActive
-                        ? const Color(0xFFB2EBF2) // tosca pastel
-                        : const Color(0xFFFFCDD2), // merah pastel
+                        ? const Color(0xFFB2EBF2)
+                        : const Color(0xFFFFCDD2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -86,37 +97,33 @@ class DroneCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          // Foto drone
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: drone.imageUrl.isNotEmpty
-                    ? Image.network(
-                  drone.imageUrl,
-                  width: 110,
-                  height: 90,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => _placeholder(),
-                )
-                    : _placeholder(),
-              ),
-            ],
-          ),
+          // Foto drone (dikomentari karena database belum punya field foto)
+          // ClipRRect(
+          //   borderRadius: BorderRadius.circular(12),
+          //   child: drone.imageUrl.isNotEmpty
+          //       ? Image.network(
+          //           drone.imageUrl,
+          //           width: 110,
+          //           height: 90,
+          //           fit: BoxFit.cover,
+          //           errorBuilder: (_, __, ___) => _placeholder(),
+          //         )
+          //       : _placeholder(),
+          // ),
         ],
       ),
     );
   }
 
-  Widget _placeholder() {
-    return Container(
-      width: 110,
-      height: 90,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F6FA),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: const Icon(Icons.router, color: AppColors.textSecondary, size: 32),
-    );
-  }
+// Widget _placeholder() {
+//   return Container(
+//     width: 110,
+//     height: 90,
+//     decoration: BoxDecoration(
+//       color: const Color(0xFFF5F6FA),
+//       borderRadius: BorderRadius.circular(12),
+//     ),
+//     child: const Icon(Icons.flight, color: AppColors.textSecondary, size: 32),
+//   );
+// }
 }

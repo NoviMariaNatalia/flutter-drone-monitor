@@ -18,38 +18,17 @@ class Drone {
     required this.longitude,
     required this.location,
   });
-}
 
-// Hardcode data sementara
-final List<Drone> dummyDrones = [
-  Drone(
-    id: '001',
-    name: 'Syma W2',
-    type: 'Quadcopter',
-    imageUrl: 'https://images.unsplash.com/photo-1473968512647-3e447244af8f?w=400',
-    isActive: true,
-    latitude: -6.2088,
-    longitude: 106.8456,
-    location: 'Ciliwung Basin',
-  ),
-  Drone(
-    id: '002',
-    name: 'DJI Mini 3',
-    type: 'Quadcopter',
-    imageUrl: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?w=400',
-    isActive: true,
-    latitude: -6.1751,
-    longitude: 106.8272,
-    location: 'Kanal Barat',
-  ),
-  Drone(
-    id: '003',
-    name: 'Autel EVO',
-    type: 'Hexacopter',
-    imageUrl: '',
-    isActive: false,
-    latitude: -6.2297,
-    longitude: 106.8295,
-    location: 'Pesanggrahan',
-  ),
-];
+  factory Drone.fromJson(Map<String, dynamic> json) {
+    return Drone(
+      id: json['drone_id'] ?? '',
+      name: json['name'] ?? '',
+      type: json['type'] ?? '',
+      imageUrl: '',
+      isActive: true,
+      latitude: double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
+      longitude: double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
+      location: json['location'] ?? '-',
+    );
+  }
+}
