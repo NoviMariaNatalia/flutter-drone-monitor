@@ -34,6 +34,148 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
+  void _showDroneDetail(Drone drone) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Handle bar
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Header: drone_id + status
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    drone.id,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Location context
+            const Text(
+              'LOCATION CONTEXT',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              drone.location,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                _buildCoordBox('LAT', '${drone.latitude.toStringAsFixed(4)}° S'),
+                const SizedBox(width: 24),
+                _buildCoordBox('LONG', '${drone.longitude.toStringAsFixed(4)}° E'),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Ketinggian banjir (hardcode sementara)
+            const Text(
+              'KETINGGIAN BANJIR',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              drone.floodHeight > 0
+                  ? '${drone.floodHeight.toStringAsFixed(1)} m'
+                  : '-',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Foto banjir (placeholder, belum ada data)
+            const Text(
+              'FOTO BANJIR',
+              style: TextStyle(
+                fontSize: 11,
+                color: AppColors.textSecondary,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              height: 140,
+              decoration: BoxDecoration(
+                color: AppColors.background,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.image_outlined, size: 36, color: AppColors.textSecondary),
+                    SizedBox(height: 6),
+                    Text(
+                      'Belum ada foto',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,7 +230,7 @@ class _MapScreenState extends State<MapScreen> {
                   orElse: () => Drone(
                     id: '', name: '', type: '', imageUrl: '',
                     isActive: false,
-                    latitude: -6.2088, longitude: 106.8456,
+                    latitude: -6.9147, longitude: 107.6098,
                     location: '',
                   ),
                 );
@@ -111,7 +253,7 @@ class _MapScreenState extends State<MapScreen> {
                     width: 40,
                     height: 40,
                     child: GestureDetector(
-                      onTap: () => setState(() => _selectedDrone = drone),
+                      onTap: () => _showDroneDetail(drone),
                       child: Container(
                         decoration: BoxDecoration(
                           color: AppColors.primary,
@@ -155,77 +297,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
 
-          // Panel bawah (muncul saat marker di-tap)
-          if (_selectedDrone != null)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 12,
-                      offset: Offset(0, -2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'LOCATION CONTEXT',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppColors.textSecondary,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () => setState(() => _selectedDrone = null),
-                          child: const Icon(Icons.close, size: 18, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    // Drone ID
-                    Text(
-                      _selectedDrone!.id,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    // Lokasi
-                    Text(
-                      _selectedDrone!.location,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _buildCoordBox('LAT', '${_selectedDrone!.latitude.toStringAsFixed(4)}° S'),
-                        const SizedBox(width: 16),
-                        _buildCoordBox('LONG', '${_selectedDrone!.longitude.toStringAsFixed(4)}° E'),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+
         ],
       ),
     );
