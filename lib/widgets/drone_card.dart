@@ -96,20 +96,18 @@ class DroneCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          // Foto drone (dikomentari karena database belum punya field foto)
-          // ClipRRect(
-          //   borderRadius: BorderRadius.circular(12),
-          //   child: drone.imageUrl.isNotEmpty
-          //       ? Image.network(
-          //           drone.imageUrl,
-          //           width: 110,
-          //           height: 90,
-          //           fit: BoxFit.cover,
-          //           errorBuilder: (_, __, ___) => _placeholder(),
-          //         )
-          //       : _placeholder(),
-          // ),
+          // Tombol hapus di pojok kanan atas
+          Align(
+            alignment: Alignment.topRight,
+            child: IconButton(
+              onPressed: null, // belum berfungsi
+              icon: const Icon(
+                Icons.delete_outline,
+                color: Color(0xFFC62828),
+                size: 22,
+              ),
+            ),
+          ),
         ],
       ),
     );

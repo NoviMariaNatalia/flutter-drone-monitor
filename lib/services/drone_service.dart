@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/flood_report.dart';
 
 class DroneService {
-  static const String baseUrl = 'http://xxx:8000/api'; // sesuaikan IP
+  static const String baseUrl = 'https://api-drone.heivet.com/api';
 
   static Future<Map<String, dynamic>> registerDrone({
     required String droneId,
@@ -39,7 +40,6 @@ class DroneService {
     }
   }
 
-  // Method baru: ambil daftar drone dari API
   static Future<List<Map<String, dynamic>>> getActiveDrones() async {
     try {
       final response = await http.get(
@@ -51,6 +51,25 @@ class DroneService {
         final data = jsonDecode(response.body);
         final List list = data['data'];
         return list.map((e) => e as Map<String, dynamic>).toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<FloodReport>> getFloodReports() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/flood-reports'),
+        headers: {'Accept': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List list = data['data'];
+        return list.map((e) => FloodReport.fromJson(e)).toList();
       } else {
         return [];
       }

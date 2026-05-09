@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'constants/app_colors.dart';
 import 'screens/home_screen.dart';
 import 'screens/map_screen.dart';
+import 'dart:io';
+import 'services/http_override.dart';
 
 void main() {
+  HttpOverrides.global = MyHttpOverrides();
   runApp(const MyApp());
 }
 
