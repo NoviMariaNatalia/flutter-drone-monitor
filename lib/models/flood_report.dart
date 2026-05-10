@@ -25,8 +25,7 @@ class FloodReport {
       longitude: double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
       imageUrl: json['image_url'] ?? '',
       waktu: json['waktu'] ?? '-',
-      // altitude: double.tryParse(json['altitude']?.toString() ?? '0') ?? 0.0,
-      // TODO: uncomment baris di atas saat backend sudah return field 'altitude'
+      altitude: double.tryParse(json['altitude']?.toString() ?? '0') ?? 0.0,
     );
   }
 }

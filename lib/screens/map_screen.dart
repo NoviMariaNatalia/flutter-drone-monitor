@@ -681,9 +681,9 @@ class _MapScreenState extends State<MapScreen> {
               style: TextStyle(fontSize: 11, color: AppColors.textSecondary, letterSpacing: 1)),
           const SizedBox(height: 4),
           Text(
-            // TODO: uncomment baris di bawah saat backend sudah return field 'altitude'
-            // report.altitude != null ? '${report.altitude!.toStringAsFixed(1)} m' : '-',
-            '-', // sementara hardcode '-' sampai backend update
+            report.altitude != null && report.altitude! > 0
+                ? '${report.altitude!.toStringAsFixed(1)} m'
+                : '-',
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 16),
