@@ -4,9 +4,12 @@ import 'screens/home_screen.dart';
 import 'screens/map_screen.dart';
 import 'dart:io';
 import 'services/http_override.dart';
+import 'services/websocket_service.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
+  WebSocketService.init();
   runApp(const MyApp());
 }
 

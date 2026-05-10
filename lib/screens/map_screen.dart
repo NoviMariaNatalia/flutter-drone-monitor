@@ -3,8 +3,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../constants/app_colors.dart';
 import '../models/drone.dart';
+import 'dart:async';
+import '../services/websocket_service.dart';
 import '../models/flood_report.dart';
 import '../services/drone_service.dart';
+import 'dart:convert';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -18,20 +21,36 @@ class _MapScreenState extends State<MapScreen> {
   List<FloodReport> _floodReports = [];
   bool _isLoading = true;
 
+  // Tambahan untuk WebSocket
+  final List<String> _subscribedDroneIds = [];
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
     _fetchAllData();
+
+    // Auto-refresh HTTP sebagai fallback, setiap 15 detik
+    _refreshTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      _fetchAllData();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchAllData() async {
-    setState(() => _isLoading = true);
+    if (!_isLoading) setState(() => _isLoading = false);
 
-    // Fetch drone dan flood reports secara paralel
     final results = await Future.wait([
       DroneService.getActiveDrones(),
       DroneService.getFloodReports(),
     ]);
+
+    if (!mounted) return;
 
     setState(() {
       _isLoading = false;
@@ -40,6 +59,79 @@ class _MapScreenState extends State<MapScreen> {
           .toList();
       _floodReports = results[1] as List<FloodReport>;
     });
+
+    _subscribeToAllDrones(); // tanpa await
+  }
+
+  void _subscribeToAllDrones() {
+    for (final drone in _drones) {
+      if (_subscribedDroneIds.contains(drone.id)) continue;
+
+      _subscribedDroneIds.add(drone.id);
+
+      WebSocketService.subscribeToDrone(
+        drone.id,
+        onDroneMovement: (data) {
+          if (!mounted || data == null) return;
+
+          final Map<String, dynamic> parsed =
+          data is String ? jsonDecode(data) : Map<String, dynamic>.from(data);
+
+          setState(() {
+            _drones = _drones.map((d) {
+              if (d.id == drone.id) {
+                return Drone(
+                  id: d.id,
+                  name: d.name,
+                  type: d.type,
+                  isActive: true,
+                  latitude: double.tryParse(parsed['latitude'].toString()) ?? d.latitude,
+                  longitude: double.tryParse(parsed['longitude'].toString()) ?? d.longitude,
+                  location: d.location,
+                );
+              }
+              return d;
+            }).toList();
+          });
+        },
+        onFloodImageCaptured: (data) {
+          if (!mounted || data == null) return;
+
+          final Map<String, dynamic> parsed =
+          data is String ? jsonDecode(data) : Map<String, dynamic>.from(data);
+
+          final newReport = FloodReport(
+            id: DateTime.now().millisecondsSinceEpoch,
+            droneId: parsed['droneId'] ?? drone.id,
+            latitude: double.tryParse(parsed['latitude'].toString()) ?? 0.0,
+            longitude: double.tryParse(parsed['longitude'].toString()) ?? 0.0,
+            imageUrl: parsed['imageUrl'] ?? '',
+            waktu: DateTime.now().toString().substring(0, 19),
+            altitude: parsed['altitude'] != null
+                ? double.tryParse(parsed['altitude'].toString())
+                : null,
+          );
+
+          setState(() {
+            _floodReports = [newReport, ..._floodReports];
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.water_drop, color: Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                  Text('Banjir baru terdeteksi oleh ${newReport.droneId}!'),
+                ],
+              ),
+              backgroundColor: Colors.red.shade600,
+              duration: const Duration(seconds: 4),
+            ),
+          );
+        },
+      );
+    }
   }
 
   // Grouping flood reports yang koordinatnya sangat berdekatan (radius < 50 meter)

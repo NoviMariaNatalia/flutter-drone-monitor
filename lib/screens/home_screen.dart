@@ -4,6 +4,7 @@ import '../models/drone.dart';
 import '../widgets/drone_card.dart';
 import '../widgets/add_drone_sheet.dart';
 import '../services/drone_service.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,10 +18,21 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   bool _isError = false;
 
+  Timer? _refreshTimer;
+
   @override
   void initState() {
     super.initState();
     _fetchDrones();
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      _fetchDrones();
+    });
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchDrones() async {
