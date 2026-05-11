@@ -77,4 +77,23 @@ class DroneService {
       return [];
     }
   }
+
+  static Future<Map<String, dynamic>> deleteDrone(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/delete-drone/$id'), // pakai int id
+        headers: {'Accept': 'application/json'},
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {'success': true, 'message': data['message']};
+      } else {
+        return {'success': false, 'message': data['message'] ?? 'Gagal menghapus drone'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Tidak dapat terhubung ke server'};
+    }
+  }
 }

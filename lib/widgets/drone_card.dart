@@ -4,8 +4,13 @@ import '../constants/app_colors.dart';
 
 class DroneCard extends StatelessWidget {
   final Drone drone;
+  final VoidCallback? onDelete; // tambahkan parameter ini
 
-  const DroneCard({super.key, required this.drone});
+  const DroneCard({
+    super.key,
+    required this.drone,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +34,6 @@ class DroneCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Drone ID
                 Text(
                   drone.id,
                   style: const TextStyle(
@@ -39,7 +43,6 @@ class DroneCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 2),
-                // Nama drone
                 Text(
                   drone.name,
                   style: const TextStyle(
@@ -57,7 +60,6 @@ class DroneCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 12),
-                // Status badge
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
@@ -96,11 +98,11 @@ class DroneCard extends StatelessWidget {
               ],
             ),
           ),
-          // Tombol hapus di pojok kanan atas
+          // Tombol hapus
           Align(
             alignment: Alignment.topRight,
             child: IconButton(
-              onPressed: null, // belum berfungsi
+              onPressed: () => _confirmDelete(context),
               icon: const Icon(
                 Icons.delete_outline,
                 color: Color(0xFFC62828),
@@ -113,15 +115,44 @@ class DroneCard extends StatelessWidget {
     );
   }
 
-// Widget _placeholder() {
-//   return Container(
-//     width: 110,
-//     height: 90,
-//     decoration: BoxDecoration(
-//       color: const Color(0xFFF5F6FA),
-//       borderRadius: BorderRadius.circular(12),
-//     ),
-//     child: const Icon(Icons.flight, color: AppColors.textSecondary, size: 32),
-//   );
-// }
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Hapus Drone',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Apakah kamu yakin ingin menghapus ${drone.name} (${drone.id})?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Batal',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onDelete?.call();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFC62828),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              'Hapus',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

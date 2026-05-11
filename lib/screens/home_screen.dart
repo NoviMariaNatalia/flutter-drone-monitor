@@ -49,6 +49,46 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _deleteDrone(Drone drone) async {
+    if (drone.isActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tidak bisa menghapus drone yang masih aktif!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    // Validasi dbId ada
+    if (drone.dbId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ID drone tidak valid!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final result = await DroneService.deleteDrone(drone.dbId!);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result['message']),
+        backgroundColor: result['success']
+            ? AppColors.primary
+            : Colors.red.shade600,
+      ),
+    );
+
+    if (result['success']) {
+      _fetchDrones(); // refresh list
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,7 +216,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ListView.builder(
         itemCount: _drones.length,
         itemBuilder: (context, index) {
-          return DroneCard(drone: _drones[index]);
+          return DroneCard(
+              drone: _drones[index],
+              onDelete: () => _deleteDrone(_drones[index]),
+          );
         },
       ),
     );

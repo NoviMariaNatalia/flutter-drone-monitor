@@ -1,5 +1,6 @@
 class Drone {
-  final String id;
+  final int? dbId;   // id dari database
+  final String id;   // drone_id
   final String name;
   final String type;
   final bool isActive;
@@ -9,6 +10,7 @@ class Drone {
   final double floodHeight;
 
   Drone({
+    this.dbId,
     required this.id,
     required this.name,
     required this.type,
@@ -21,6 +23,7 @@ class Drone {
 
   factory Drone.fromJson(Map<String, dynamic> json) {
     return Drone(
+      dbId: json['id'],
       id: json['drone_id'] ?? '',
       name: json['name'] ?? '-',
       type: json['type'] ?? '-',
@@ -28,7 +31,7 @@ class Drone {
       latitude: double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
       longitude: double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
       location: json['location'] ?? '-',
-      floodHeight: 0.0, // nanti ganti dari json['flood_height']
+      floodHeight: 0.0,
     );
   }
 }
