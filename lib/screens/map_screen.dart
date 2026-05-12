@@ -34,6 +34,8 @@ class _MapScreenState extends State<MapScreen> {
     _refreshTimer = Timer.periodic(const Duration(seconds: 15), (_) {
       _fetchAllData();
     });
+
+    _subscribeToMonitor();
   }
 
   @override
@@ -61,6 +63,40 @@ class _MapScreenState extends State<MapScreen> {
     });
 
     _subscribeToAllDrones(); // tanpa await
+  }
+
+  void _subscribeToMonitor() {
+    WebSocketService.subscribeToMonitor(
+      onStatusChanged: (data) {
+        if (!mounted || data == null) return;
+
+        final Map<String, dynamic> parsed =
+        data is String ? jsonDecode(data) : Map<String, dynamic>.from(data);
+
+        final int? droneDbId = parsed['id'];
+        final bool isOnline = parsed['status'] == 1 ||
+            parsed['status'] == 'ONLINE' ||
+            parsed['status'] == true;
+
+        setState(() {
+          _drones = _drones.map((d) {
+            if (d.dbId == droneDbId) {
+              return Drone(
+                dbId: d.dbId,
+                id: d.id,
+                name: d.name,
+                type: d.type,
+                isActive: isOnline,
+                latitude: d.latitude,
+                longitude: d.longitude,
+                location: d.location,
+              );
+            }
+            return d;
+          }).toList();
+        });
+      },
+    );
   }
 
   void _subscribeToAllDrones() {

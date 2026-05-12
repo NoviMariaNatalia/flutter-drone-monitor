@@ -1,11 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:dart_pusher_channels/dart_pusher_channels.dart';
 
 class WebSocketService {
   static PusherChannelsClient? _client;
   static bool _initialized = false;
+  static VoidCallback? _onConnected;
 
-  static void init() {
+  static void init({VoidCallback? onConnected}) {
     if (_initialized) return;
+
+    _onConnected = onConnected;
 
     const options = PusherChannelsOptions.fromHost(
       scheme: 'wss',
@@ -25,11 +29,33 @@ class WebSocketService {
 
     _client!.onConnectionEstablished.listen((_) {
       print('[WS] Connected ke Reverb!');
+      _onConnected?.call(); // panggil callback setelah connected
     });
 
     _client!.connect();
     _initialized = true;
     print('[WS] Connecting...');
+  }
+
+  static void subscribeToMonitor({
+    required Function(dynamic) onStatusChanged,
+  }) {
+    if (_client == null) return;
+
+    final channel = _client!.publicChannel('drones-monitor');
+    channel.subscribe();
+
+    // Gunakan global eventStream dan filter manual
+    _client!.eventStream.listen((event) {
+      // print('[WS] RAW EVENT: ${event.name} | channel: ${event.channelName} | data: ${event.data}');
+
+      if (event.channelName == 'drones-monitor' && event.name == 'status.changed') {
+        print('[WS] StatusChanged → ${event.data}');
+        onStatusChanged(event.data);
+      }
+    });
+
+    print('[WS] Subscribed to drones-monitor');
   }
 
   static void subscribeToDrone(

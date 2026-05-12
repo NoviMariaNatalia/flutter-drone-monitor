@@ -9,7 +9,13 @@ import 'services/websocket_service.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   HttpOverrides.global = MyHttpOverrides();
-  WebSocketService.init();
+  WebSocketService.init(
+    onConnected: () {
+      // Subscribe drones-monitor setelah WebSocket confirmed connected
+      // Ini akan dipakai oleh HomeScreen untuk update status real-time
+      print('[WS] Ready — drones-monitor akan disubscribe oleh HomeScreen');
+    },
+  );
   runApp(const MyApp());
 }
 

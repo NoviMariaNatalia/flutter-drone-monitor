@@ -1,6 +1,6 @@
 class Drone {
-  final int? dbId;   // id dari database
-  final String id;   // drone_id
+  final int? dbId;
+  final String id;
   final String name;
   final String type;
   final bool isActive;
@@ -27,7 +27,8 @@ class Drone {
       id: json['drone_id'] ?? '',
       name: json['name'] ?? '-',
       type: json['type'] ?? '-',
-      isActive: json['is_active'] ?? false,
+      // handle both is_active (bool) dan status (0/1)
+      isActive: json['is_active'] ?? (json['status'] == 1 || json['status'] == true),
       latitude: double.tryParse(json['latitude']?.toString() ?? '0') ?? 0.0,
       longitude: double.tryParse(json['longitude']?.toString() ?? '0') ?? 0.0,
       location: json['location'] ?? '-',

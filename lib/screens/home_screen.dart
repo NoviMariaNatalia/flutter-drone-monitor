@@ -4,7 +4,8 @@ import '../models/drone.dart';
 import '../widgets/drone_card.dart';
 import '../widgets/add_drone_sheet.dart';
 import '../services/drone_service.dart';
-import 'dart:async';
+import 'dart:convert';
+import '../services/websocket_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,20 +19,15 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   bool _isError = false;
 
-  Timer? _refreshTimer;
-
   @override
   void initState() {
     super.initState();
     _fetchDrones();
-    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (_) {
-      _fetchDrones();
-    });
+    _subscribeToMonitor();
   }
 
   @override
   void dispose() {
-    _refreshTimer?.cancel();
     super.dispose();
   }
 
@@ -47,6 +43,43 @@ class _HomeScreenState extends State<HomeScreen> {
       _isLoading = false;
       _drones = result.map((json) => Drone.fromJson(json)).toList();
     });
+  }
+
+  void _subscribeToMonitor() {
+    WebSocketService.subscribeToMonitor(
+      onStatusChanged: (data) {
+        if (!mounted || data == null) return;
+
+        final Map<String, dynamic> parsed =
+        data is String ? jsonDecode(data) : Map<String, dynamic>.from(data);
+
+        print('[WS] Status changed: $parsed');
+
+        final int? droneDbId = parsed['id'];
+        final bool isOnline = parsed['status'] == 1 ||
+            parsed['status'] == 'ONLINE' ||
+            parsed['status'] == true;
+
+        // Update status drone langsung tanpa fetch ulang
+        setState(() {
+          _drones = _drones.map((d) {
+            if (d.dbId == droneDbId) {
+              return Drone(
+                dbId: d.dbId,
+                id: d.id,
+                name: d.name,
+                type: d.type,
+                isActive: isOnline,
+                latitude: d.latitude,
+                longitude: d.longitude,
+                location: d.location,
+              );
+            }
+            return d;
+          }).toList();
+        });
+      },
+    );
   }
 
   Future<void> _deleteDrone(Drone drone) async {
