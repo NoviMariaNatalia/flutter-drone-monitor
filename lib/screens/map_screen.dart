@@ -275,25 +275,6 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined,
-                color: AppColors.textPrimary),
-            onPressed: () {},
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.person, color: Colors.white, size: 20),
-            ),
-          ),
-        ],
       ),
       body: _isLoading
           ? const Center(
